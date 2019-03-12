@@ -55,8 +55,27 @@ abstract class GraphemeClusters implements Iterable<String> {
 
   /// Returns a new grapheme clusters sequence where [source] has been
   /// replaced by [replacement].
-  GraphemeClusters replace(
-      GraphemeClusters source, GraphemeClusters replacement);
+  ///
+  /// If [startIndex] is provided, instead replaces grapheme clusters of the
+  /// substring of [string] starting at [startIndex].
+  /// The [startIndex] should be a grapheme cluster boundary in [string],
+  /// otherwise the replaced substrings may not correspond to grapheme
+  /// clusters of this sequence.
+  GraphemeClusters replaceAll(
+      GraphemeClusters source, GraphemeClusters replacement,
+      [int startIndex = 0]);
+
+  /// Returns a new grapheme clusters sequence where the first occurrence of
+  /// [source] has been replaced by [replacement].
+  ///
+  /// If [startIndex] is provided, instead replaces the first matching
+  /// grapheme clusters of the substring of [string] starting at [startIndex].
+  /// The [startIndex] should be a grapheme cluster boundary in [string],
+  /// otherwise the replaced substrings may not correspond to grapheme
+  /// clusters of this sequence.
+  GraphemeClusters replaceFirst(
+      GraphemeClusters source, GraphemeClusters replacement,
+      [int startIndex = 0]);
 }
 
 /// Iterator over grapheme clusters of a string.
@@ -88,7 +107,7 @@ abstract class GraphemeCluster implements Iterator<String> {
   /// The code units of the current grapheme cluster.
   List<int> get codeUnits;
 
-  /// The code points of the current grapheme cluster.
+  /// The code poin;ts of the current grapheme cluster.
   Runes get runes;
 
   /// Resets the iterator to the [index] position.
@@ -149,19 +168,38 @@ class _GraphemeClusters extends Iterable<String> implements GraphemeClusters {
     return false;
   }
 
-  GraphemeClusters replace(
-      GraphemeClusters source, GraphemeClusters replacement) {
-    var buffer = StringBuffer();
-    int start = 0;
+  GraphemeClusters replaceAll(
+      GraphemeClusters source, GraphemeClusters replacement,
+      [int startIndex = 0]) {
+    if (startIndex != 0) {
+      RangeError.checkValueInInterval(
+          startIndex, 0, string.length, "startIndex");
+    }
+    int start = startIndex;
+    StringBuffer buffer;
     int next = -1;
     while ((next = this.indexOf(source, start)) >= 0) {
-      buffer.write(string.substring(start, next));
-      buffer.write(replacement);
+      (buffer ??= StringBuffer())
+        ..write(string.substring(start, next))
+        ..write(replacement);
       start = next + source.string.length;
     }
-    if (start == 0) return this;
+    if (buffer == null) return this;
     buffer.write(string.substring(start));
     return GraphemeClusters(buffer.toString());
+  }
+
+  GraphemeClusters replaceFirst(
+      GraphemeClusters source, GraphemeClusters replacement,
+      [int startIndex = 0]) {
+    if (startIndex != 0) {
+      RangeError.checkValueInInterval(
+          startIndex, 0, string.length, "startIndex");
+    }
+    int index = this.indexOf(source, startIndex);
+    if (index < 0) return this;
+    return GraphemeClusters(string.replaceRange(
+        index, index + source.string.length, replacement.string));
   }
 }
 
