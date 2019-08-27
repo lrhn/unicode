@@ -375,14 +375,14 @@ class _GraphemeClusters extends Iterable<String> implements GraphemeClusters {
   Iterable<T> whereType<T>() {
     Iterable<Object> self = this;
     if (self is Iterable<T>) {
-      return self.map((x) => x);
+      return self.map<T>((x) => x);
     }
     return Iterable<T>.empty();
   }
 
   String join([String separator = ""]) {
     if (separator == "") return string;
-    return super.join(separator);
+    return _explodeReplace(separator, "", 0);
   }
 
   String lastWhere(bool test(String element), {String orElse()}) {
@@ -498,7 +498,8 @@ class _GraphemeClusters extends Iterable<String> implements GraphemeClusters {
     }
     if (pattern.string.isEmpty) {
       if (string.isEmpty) return replacement;
-      return GraphemeClusters(_explodeReplace(replacement.string, startIndex));
+      var replacementString = replacement.string;
+      return GraphemeClusters(_explodeReplace(replacementString, replacementString, startIndex));
     }
     int start = startIndex;
     StringBuffer buffer;
@@ -514,17 +515,20 @@ class _GraphemeClusters extends Iterable<String> implements GraphemeClusters {
     return GraphemeClusters(buffer.toString());
   }
 
-  // Replaces every grapheme cluster boundary with [replacement].
-  // Starts at startIndex.
-  String _explodeReplace(String replacement, int startIndex) {
+  // Replaces every internal grapheme cluster boundary with
+  // [internalReplacement] and adds [outerReplacement] at both ends
+  // Starts at [startIndex].
+  String _explodeReplace(String internalReplacement, String outerReplacement, int startIndex) {
     var buffer = StringBuffer(string.substring(0, startIndex));
     var breaks = Breaks(string, startIndex, string.length, stateSoTNoBreak);
     int index = 0;
+    String replacement = outerReplacement;
     while ((index = breaks.nextBreak()) >= 0) {
       buffer..write(replacement)..write(string.substring(startIndex, index));
       startIndex = index;
+      replacement = internalReplacement;
     }
-    buffer.write(replacement);
+    buffer.write(outerReplacement);
     return buffer.toString();
   }
 
@@ -535,7 +539,7 @@ class _GraphemeClusters extends Iterable<String> implements GraphemeClusters {
       RangeError.checkValueInInterval(
           startIndex, 0, string.length, "startIndex");
     }
-    int index = this.indexOf(source, startIndex);
+    int index = _indexOf(source.string, startIndex);
     if (index < 0) return this;
     return GraphemeClusters(string.replaceRange(
         index, index + source.string.length, replacement.string));
@@ -548,7 +552,7 @@ class _GraphemeClusters extends Iterable<String> implements GraphemeClusters {
   GraphemeClusters skip(int count) {
     RangeError.checkNotNegative(count, "count");
     if (count == 0) return this;
-    if (this.isNotEmpty) {
+    if (string.isNotEmpty) {
       var breaks = Breaks(string, 0, string.length, stateSoTNoBreak);
       int startIndex = 0;
       while (count > 0) {
@@ -568,7 +572,7 @@ class _GraphemeClusters extends Iterable<String> implements GraphemeClusters {
   GraphemeClusters take(int count) {
     RangeError.checkNotNegative(count, "count");
     if (count == 0) return _empty;
-    if (this.isNotEmpty) {
+    if (string.isNotEmpty) {
       var breaks = Breaks(string, 0, string.length, stateSoTNoBreak);
       int endIndex = 0;
       while (count > 0) {
