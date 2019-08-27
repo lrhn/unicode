@@ -304,9 +304,9 @@ void expectGC(GraphemeClusters actual, List<String> expected) {
   expect(
       actual.takeWhile(isEven).toString(), expected.takeWhile(isEven).join());
 
-  expect(actual.skipLastWhere(isEven).toString(),
+  expect(actual.skipLastWhile(isEven).toString(),
       expected.toList().reversed.skipWhile(isEven).toList().reversed.join());
-  expect(actual.takeLastWhere(isEven).toString(),
+  expect(actual.takeLastWhile(isEven).toString(),
       expected.toList().reversed.takeWhile(isEven).toList().reversed.join());
 
   expect(actual.where(isEven).toString(), expected.where(isEven).join());

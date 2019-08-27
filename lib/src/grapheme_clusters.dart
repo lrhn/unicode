@@ -48,144 +48,6 @@ abstract class GraphemeClusters implements Iterable<String> {
   // as well as controlling the iteration in more detail.
   GraphemeCluster get iterator;
 
-  /// Eagerly selects the first [count] grapheme clusters.
-  ///
-  /// If [count] is greater than [length], the count of grapheme
-  /// clusters available, then the entire sequence of grapheme clusters
-  /// is returned.
-  GraphemeClusters take(int count);
-
-  /// Eagerly selects all but the first [count] grapheme clusters.
-  ///
-  /// If [count] is greater than [length], the count of grapheme
-  /// clusters available, then the empty sequence of grapheme clusters
-  /// is returned.
-  GraphemeClusters skip(int count);
-
-  /// Eagerly selects a range of grapheme clusters.
-  ///
-  /// The [start] must be non-negative and [end] must be at least
-  /// as large as [start].
-  ///
-  /// If [end] is greater than [length], the count of grapheme
-  /// clusters available, then the entire sequence of grapheme clusters
-  /// is returned.
-  GraphemeClusters getRange(int start, int end);
-
-  /// Eagerly selects a leading sequnce of grapheme clusters.
-  ///
-  /// Checks each grapheme cluster, from first to last, against [test],
-  /// until one is found whwere [test] returns `false`.
-  /// The grapheme clusters up to, but not including, the first one
-  /// where [test] returns `false` are included in the result.
-  ///
-  /// If no grapheme clusters test `false`, the entire sequence of grapheme
-  /// clusters is returned.
-  GraphemeClusters takeWhile(bool Function(String) test);
-
-  /// Eagerly selects a trailing sequence of grapheme clusters.
-  ///
-  /// Checks each grapheme cluster, from first to last, against [test],
-  /// until one is found whwere [test] returns `false`.
-  /// The grapheme clusters starting with the first one
-  /// where [test] returns `false`, are included in the result.
-  ///
-  /// If no grapheme clusters test `false`, the result is an empty sequence
-  /// of grapheme clusters.
-  GraphemeClusters skipWhile(bool Function(String) test);
-
-  /// Eagerly selects a subset of the grapheme clusters.
-  ///
-  /// Tests each grapheme cluster against [test], and returns the
-  /// grapheme clusters of the concatenation of those grapheme cluster strings.
-  GraphemeClusters where(bool Function(String) test);
-
-  /// Eagerly selects all but the last [count] grapheme clusters.
-  ///
-  /// If [count] is greater than [length], the count of grapheme
-  /// clusters available, then the empty sequence of grapheme clusters
-  /// is returned.
-  GraphemeClusters skipLast(int count);
-
-  /// Eagerly selects the last [count] grapheme clusters.
-  ///
-  /// If [count] is greater than [length], the count of grapheme
-  /// clusters available, then the entire sequence of grapheme clusters
-  /// is returned.
-  GraphemeClusters takeLast(int count);
-
-  /// Eagerly selects a leading sequnce of grapheme clusters.
-  ///
-  /// Checks each grapheme cluster, from last to first, against [test],
-  /// until one is found whwere [test] returns `false`.
-  /// The grapheme clusters up to and including the one with the latest index
-  /// where [test] returns `false` are included in the result.
-  ///
-  /// If no grapheme clusters test `false`, the empty sequence of grapheme
-  /// clusters is returned.
-  GraphemeClusters skipLastWhere(bool Function(String) test);
-
-  /// Eagerly selects a trailing sequence of grapheme clusters.
-  ///
-  /// Checks each grapheme cluster, from last to first, against [test],
-  /// until one is found whwere [test] returns `false`.
-  /// The grapheme clusters after the one with the latest index where
-  /// [test] returns `false` are included in the result.
-  ///
-  /// If no grapheme clusters test `false`, the entire sequence of grapheme
-  /// clusters is returned.
-  GraphemeClusters takeLastWhere(bool Function(String) test);
-
-  /// The grapheme clusters of the concatenation of this and [other].
-  ///
-  /// This is the grapheme clusters of the concatenation of the underlying
-  /// strings. If there is no grapheme cluster break at the concatenation
-  /// point in the resulting string, then the result is not the concatenation
-  /// of the two grapheme cluster sequences.
-  ///
-  /// This differs from [followedBy] which provides the lazy concatenation
-  /// of this sequence of strings with any other sequence of strings.
-  GraphemeClusters operator +(GraphemeClusters other);
-
-  /// The grapheme clusters of [string] with [other] inserted at [index].
-  GraphemeClusters insertAt(int index, GraphemeClusters other);
-
-  /// The grapheme clusters of [string] with a substring replaced by other.
-  GraphemeClusters replaceRange(
-      int startIndex, int endIndex, GraphemeClusters other);
-
-  /// The grapheme clusters of the lower-case version of [string].
-  GraphemeClusters toLowerCase();
-
-  /// The grapheme clusters of the upper-case version of [string].
-  GraphemeClusters toUpperCase();
-
-  /// The string index after the first place [other] occurs as a subsequence of
-  /// these grapheme clusters.
-  ///
-  /// Returns the [string] index after the first occurrence of the grapheme
-  /// clusters of [other] in the sequence of grapheme clusters of [string].
-  /// Returns a negative number if there is no such occurrence of [other].
-  ///
-  /// If [startIndex] is supplied, returns the index after the first occurrence
-  /// of [other] in this which starts no earlier than [startIndex], and again
-  /// returns `null` if there is no such occurrence. That is, if the result
-  /// is non-negative, it is greater than or equal to [startIndex].
-  int indexAfter(GraphemeClusters other, [int startIndex]);
-
-  /// The string index after the last place where [other] occurs as
-  /// a subsequence of these grapheme clusters.
-  ///
-  /// Returns the [string] index after the last occurrence of the grapheme
-  /// clusters of [other] in the sequence of grapheme clusters of [string].
-  /// Returns a negative number if there is no such occurrence of [other].
-  ///
-  /// If [startIndex] is supplied, returns the index after the last occurrence
-  /// of [other] in this which ends no later than [startIndex], and again
-  /// returns `null` if there is no such occurrence. That is the result
-  /// is less than or equal to [startIndex].
-  int lastIndexAfter(GraphemeClusters other, [int startIndex]);
-
   /// Whether [graphemeCluster] is an element of this sequence of
   /// grapheme clusters.
   ///
@@ -198,32 +60,6 @@ abstract class GraphemeClusters implements Iterable<String> {
   /// Whether this sequence of grapheme clusters contains [other]
   /// as a subsequence.
   bool containsAll(GraphemeClusters other);
-
-  /// The string index before the first place where [other] occurs as
-  /// a subsequence of these grapheme clusters.
-  ///
-  /// Returns the [string] index before first occurrence of the grapheme
-  /// clusters of [other] in the sequence of grapheme clusters of [string].
-  /// Returns a negative number if there is no such occurrence of [other].
-  ///
-  /// If [startIndex] is supplied, returns the index after the first occurrence
-  /// of [other] in this which starts no earlier than [startIndex], and again
-  /// returns `null` if there is no such occurrence. That is, if the result
-  /// is non-negative, it is greater than or equal to [startIndex].
-  int indexOf(GraphemeClusters other, [int startIndex]);
-
-  /// The string index before the last place where [other] occurs as
-  /// a subsequence of these grapheme clusters.
-  ///
-  /// Returns the [string] index before last occurrence of the grapheme
-  /// clusters of [other] in the sequence of grapheme clusters of [string].
-  /// Returns a negative number if there is no such occurrence of [other].
-  ///
-  /// If [startIndex] is supplied, returns the before after the first occurrence
-  /// of [other] in this which starts no later than [startIndex], and again
-  /// returns `null` if there is no such occurrence. That is the result
-  /// is less than or equal to [startIndex].
-  int lastIndexOf(GraphemeClusters other, [int startIndex]);
 
   /// Whether [other] is an initial subsequence of this sequence
   /// of grapheme clusters.
@@ -251,6 +87,164 @@ abstract class GraphemeClusters implements Iterable<String> {
   /// or if [other] does not occur at that position.
   bool endsWith(GraphemeClusters other, [int endIndex]);
 
+  /// The string index before the first place where [other] occurs as
+  /// a subsequence of these grapheme clusters.
+  ///
+  /// Returns the [string] index before first occurrence of the grapheme
+  /// clusters of [other] in the sequence of grapheme clusters of [string].
+  /// Returns a negative number if there is no such occurrence of [other].
+  ///
+  /// If [startIndex] is supplied, returns the index after the first occurrence
+  /// of [other] in this which starts no earlier than [startIndex], and again
+  /// returns `null` if there is no such occurrence. That is, if the result
+  /// is non-negative, it is greater than or equal to [startIndex].
+  int indexOf(GraphemeClusters other, [int startIndex]);
+
+  /// The string index after the first place [other] occurs as a subsequence of
+  /// these grapheme clusters.
+  ///
+  /// Returns the [string] index after the first occurrence of the grapheme
+  /// clusters of [other] in the sequence of grapheme clusters of [string].
+  /// Returns a negative number if there is no such occurrence of [other].
+  ///
+  /// If [startIndex] is supplied, returns the index after the first occurrence
+  /// of [other] in this which starts no earlier than [startIndex], and again
+  /// returns `null` if there is no such occurrence. That is, if the result
+  /// is non-negative, it is greater than or equal to [startIndex].
+  int indexAfter(GraphemeClusters other, [int startIndex]);
+
+  /// The string index before the last place where [other] occurs as
+  /// a subsequence of these grapheme clusters.
+  ///
+  /// Returns the [string] index before last occurrence of the grapheme
+  /// clusters of [other] in the sequence of grapheme clusters of [string].
+  /// Returns a negative number if there is no such occurrence of [other].
+  ///
+  /// If [startIndex] is supplied, returns the before after the first occurrence
+  /// of [other] in this which starts no later than [startIndex], and again
+  /// returns `null` if there is no such occurrence. That is the result
+  /// is less than or equal to [startIndex].
+  int lastIndexOf(GraphemeClusters other, [int startIndex]);
+
+  /// The string index after the last place where [other] occurs as
+  /// a subsequence of these grapheme clusters.
+  ///
+  /// Returns the [string] index after the last occurrence of the grapheme
+  /// clusters of [other] in the sequence of grapheme clusters of [string].
+  /// Returns a negative number if there is no such occurrence of [other].
+  ///
+  /// If [startIndex] is supplied, returns the index after the last occurrence
+  /// of [other] in this which ends no later than [startIndex], and again
+  /// returns `null` if there is no such occurrence. That is the result
+  /// is less than or equal to [startIndex].
+  int lastIndexAfter(GraphemeClusters other, [int startIndex]);
+
+  /// Eagerly selects a subset of the grapheme clusters.
+  ///
+  /// Tests each grapheme cluster against [test], and returns the
+  /// grapheme clusters of the concatenation of those grapheme cluster strings.
+  GraphemeClusters where(bool Function(String) test);
+
+  /// Eagerly selects all but the first [count] grapheme clusters.
+  ///
+  /// If [count] is greater than [length], the count of grapheme
+  /// clusters available, then the empty sequence of grapheme clusters
+  /// is returned.
+  GraphemeClusters skip(int count);
+
+  /// Eagerly selects the first [count] grapheme clusters.
+  ///
+  /// If [count] is greater than [length], the count of grapheme
+  /// clusters available, then the entire sequence of grapheme clusters
+  /// is returned.
+  GraphemeClusters take(int count);
+
+  /// Eagerly selects all but the last [count] grapheme clusters.
+  ///
+  /// If [count] is greater than [length], the count of grapheme
+  /// clusters available, then the empty sequence of grapheme clusters
+  /// is returned.
+  GraphemeClusters skipLast(int count);
+
+  /// Eagerly selects the last [count] grapheme clusters.
+  ///
+  /// If [count] is greater than [length], the count of grapheme
+  /// clusters available, then the entire sequence of grapheme clusters
+  /// is returned.
+  GraphemeClusters takeLast(int count);
+
+  /// Eagerly selects a range of grapheme clusters.
+  ///
+  /// The [start] must be non-negative and [end] must be at least
+  /// as large as [start].
+  ///
+  /// If [end] is greater than [length], the count of grapheme
+  /// clusters available, then the entire sequence of grapheme clusters
+  /// is returned.
+  GraphemeClusters getRange(int start, int end);
+
+  /// Eagerly selects a trailing sequence of grapheme clusters.
+  ///
+  /// Checks each grapheme cluster, from first to last, against [test],
+  /// until one is found whwere [test] returns `false`.
+  /// The grapheme clusters starting with the first one
+  /// where [test] returns `false`, are included in the result.
+  ///
+  /// If no grapheme clusters test `false`, the result is an empty sequence
+  /// of grapheme clusters.
+  GraphemeClusters skipWhile(bool Function(String) test);
+
+  /// Eagerly selects a leading sequnce of grapheme clusters.
+  ///
+  /// Checks each grapheme cluster, from first to last, against [test],
+  /// until one is found whwere [test] returns `false`.
+  /// The grapheme clusters up to, but not including, the first one
+  /// where [test] returns `false` are included in the result.
+  ///
+  /// If no grapheme clusters test `false`, the entire sequence of grapheme
+  /// clusters is returned.
+  GraphemeClusters takeWhile(bool Function(String) test);
+
+  /// Eagerly selects a leading sequnce of grapheme clusters.
+  ///
+  /// Checks each grapheme cluster, from last to first, against [test],
+  /// until one is found whwere [test] returns `false`.
+  /// The grapheme clusters up to and including the one with the latest index
+  /// where [test] returns `false` are included in the result.
+  ///
+  /// If no grapheme clusters test `false`, the empty sequence of grapheme
+  /// clusters is returned.
+  GraphemeClusters skipLastWhile(bool Function(String) test);
+
+  /// Eagerly selects a trailing sequence of grapheme clusters.
+  ///
+  /// Checks each grapheme cluster, from last to first, against [test],
+  /// until one is found whwere [test] returns `false`.
+  /// The grapheme clusters after the one with the latest index where
+  /// [test] returns `false` are included in the result.
+  ///
+  /// If no grapheme clusters test `false`, the entire sequence of grapheme
+  /// clusters is returned.
+  GraphemeClusters takeLastWhile(bool Function(String) test);
+
+  /// The grapheme clusters of the concatenation of this and [other].
+  ///
+  /// This is the grapheme clusters of the concatenation of the underlying
+  /// strings. If there is no grapheme cluster break at the concatenation
+  /// point in the resulting string, then the result is not the concatenation
+  /// of the two grapheme cluster sequences.
+  ///
+  /// This differs from [followedBy] which provides the lazy concatenation
+  /// of this sequence of strings with any other sequence of strings.
+  GraphemeClusters operator +(GraphemeClusters other);
+
+  /// The grapheme clusters of [string] with [other] inserted at [index].
+  GraphemeClusters insertAt(int index, GraphemeClusters other);
+
+  /// The grapheme clusters of [string] with a substring replaced by other.
+  GraphemeClusters replaceRange(
+      int startIndex, int endIndex, GraphemeClusters other);
+
   /// Replaces [source] with [replacement].
   ///
   /// Returns a new [GrapehemeClusters] where all occurrences of the
@@ -273,6 +267,21 @@ abstract class GraphemeClusters implements Iterable<String> {
   GraphemeClusters replaceFirst(
       GraphemeClusters source, GraphemeClusters replacement,
       [int startIndex = 0]);
+
+  /// The grapheme clusters of the lower-case version of [string].
+  GraphemeClusters toLowerCase();
+
+  /// The grapheme clusters of the upper-case version of [string].
+  GraphemeClusters toUpperCase();
+
+  /// The hash code of [string].
+  int get hashCode;
+
+  /// Whether [other] to another [GraphemeClusters] with the same [string].
+  bool operator ==(Object other);
+
+  /// The [string] content of these grapheme clusters.
+  String toString();
 }
 
 /// Iterator over grapheme clusters of a string.
@@ -678,7 +687,7 @@ class _GraphemeClusters extends Iterable<String> implements GraphemeClusters {
     return _GraphemeClusters.empty();
   }
 
-  GraphemeClusters skipLastWhere(bool Function(String) test) {
+  GraphemeClusters skipLastWhile(bool Function(String) test) {
     if (string.isNotEmpty) {
       var breaks = BackBreaks(string, string.length, 0, stateEoTNoBreak);
       int index = 0;
@@ -714,7 +723,7 @@ class _GraphemeClusters extends Iterable<String> implements GraphemeClusters {
     return this;
   }
 
-  GraphemeClusters takeLastWhere(bool Function(String) test) {
+  GraphemeClusters takeLastWhile(bool Function(String) test) {
     if (string.isNotEmpty) {
       var breaks = BackBreaks(string, string.length, 0, stateEoTNoBreak);
       int index = 0;
@@ -786,6 +795,11 @@ class _GraphemeClusters extends Iterable<String> implements GraphemeClusters {
   GraphemeClusters toLowerCase() => _GraphemeClusters(string.toLowerCase());
 
   GraphemeClusters toUpperCase() => _GraphemeClusters(string.toUpperCase());
+
+  bool operator ==(Object other) =>
+     other is GraphemeClusters && string == other.string;
+
+  int get hashCode => string.hashCode;
 
   String toString() => string;
 }
