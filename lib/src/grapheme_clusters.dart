@@ -32,6 +32,18 @@ Iterable<int> graphemeClusterBoundaries(String string,
 /// and is known not to change, operations which select a subset of
 /// the elements can be computed eagerly, and in that case the
 /// operation returns a new `GraphemeClusters` object.
+///
+/// A `GraphemeClusters` also supports operations based on
+/// string indices into the underlying string.
+///
+/// Inspection operations like [indexOf] or [lastIndexAfter]
+/// returns such indices which are guranteed to be at grapheme cluster
+/// boundaries.
+/// Most such operations use the index as starting point,
+/// but will still only work on entire grapheme clusters.
+/// A few, like [substring] and [replaceSubstring], work directly
+/// on the underlying string, independently of grapheme cluster
+/// boundaries.
 abstract class GraphemeClusters implements Iterable<String> {
   /// Creates a [GraphemeClusters] allowing iteration of
   /// the grapheme clusters of [string].
@@ -175,12 +187,17 @@ abstract class GraphemeClusters implements Iterable<String> {
 
   /// Eagerly selects a range of grapheme clusters.
   ///
+  /// Both [start] and [end] are offsets of grapheme clusters,
+  /// not indices into [string].
   /// The [start] must be non-negative and [end] must be at least
   /// as large as [start].
   ///
+  /// If [start] is at least as great as [length], then the result
+  /// is an empty sequence of graphemes.
   /// If [end] is greater than [length], the count of grapheme
-  /// clusters available, then the entire sequence of grapheme clusters
-  /// is returned.
+  /// clusters available, then it acts the same as if it was [length].
+  ///
+  /// A call like `gc.getRange(a, b)` is equivalent to `gc.take(b).skip(a)`.
   GraphemeClusters getRange(int start, int end);
 
   /// Eagerly selects a trailing sequence of grapheme clusters.
@@ -239,11 +256,20 @@ abstract class GraphemeClusters implements Iterable<String> {
   GraphemeClusters operator +(GraphemeClusters other);
 
   /// The grapheme clusters of [string] with [other] inserted at [index].
+  ///
+  /// The [index] is a string can be any index into [string].
   GraphemeClusters insertAt(int index, GraphemeClusters other);
 
   /// The grapheme clusters of [string] with a substring replaced by other.
-  GraphemeClusters replaceRange(
+  GraphemeClusters replaceSubstring(
       int startIndex, int endIndex, GraphemeClusters other);
+
+  /// The grapheme clusters of a substring of [string].
+  ///
+  /// The [startIndex] and [endIndex] must be a valid range of [string]
+  /// (0 &le; `startIndex` &le; `endIndex` &le; `string.length`).
+  /// If [endIndex] is omitted, it defaults to `string.length`.
+  GraphemeClusters substring(int startIndex, [int endIndex]);
 
   /// Replaces [source] with [replacement].
   ///
@@ -407,6 +433,22 @@ class _GraphemeClusters extends Iterable<String> implements GraphemeClusters {
     throw StateError("no element");
   }
 
+  String elementAt(int index) {
+    RangeError.checkNotNegative(index, "index");
+    int count = 0;
+    if (string.isNotEmpty) {
+      var breaks = Breaks(string, 0, string.length, stateSoTNoBreak);
+      int start = 0;
+      int end = 0;
+      while ((end = breaks.nextBreak()) >= 0) {
+        if (count == index) return string.substring(start, end);
+        count++;
+        start = end;
+      }
+    }
+    throw RangeError.index(index, this, "index", null, count);
+  }
+
   bool contains(Object other) {
     if (other is String) {
       if (other.isEmpty) return false;
@@ -508,7 +550,8 @@ class _GraphemeClusters extends Iterable<String> implements GraphemeClusters {
     if (pattern.string.isEmpty) {
       if (string.isEmpty) return replacement;
       var replacementString = replacement.string;
-      return GraphemeClusters(_explodeReplace(replacementString, replacementString, startIndex));
+      return GraphemeClusters(
+          _explodeReplace(replacementString, replacementString, startIndex));
     }
     int start = startIndex;
     StringBuffer buffer;
@@ -527,7 +570,8 @@ class _GraphemeClusters extends Iterable<String> implements GraphemeClusters {
   // Replaces every internal grapheme cluster boundary with
   // [internalReplacement] and adds [outerReplacement] at both ends
   // Starts at [startIndex].
-  String _explodeReplace(String internalReplacement, String outerReplacement, int startIndex) {
+  String _explodeReplace(
+      String internalReplacement, String outerReplacement, int startIndex) {
     var buffer = StringBuffer(string.substring(0, startIndex));
     var breaks = Breaks(string, startIndex, string.length, stateSoTNoBreak);
     int index = 0;
@@ -784,7 +828,7 @@ class _GraphemeClusters extends Iterable<String> implements GraphemeClusters {
     return _lastIndexOf(other.string, startIndex);
   }
 
-  GraphemeClusters replaceRange(
+  GraphemeClusters replaceSubstring(
       int startIndex, int endIndex, GraphemeClusters other) {
     RangeError.checkValidRange(
         startIndex, endIndex, string.length, "startIndex", "endIndex");
@@ -792,12 +836,18 @@ class _GraphemeClusters extends Iterable<String> implements GraphemeClusters {
         string.replaceRange(startIndex, endIndex, other.string));
   }
 
+  GraphemeClusters substring(int startIndex, [int endIndex]) {
+    endIndex = RangeError.checkValidRange(
+        startIndex, endIndex, string.length, "startIndex", "endIndex");
+    return _GraphemeClusters(string.substring(startIndex, endIndex));
+  }
+
   GraphemeClusters toLowerCase() => _GraphemeClusters(string.toLowerCase());
 
   GraphemeClusters toUpperCase() => _GraphemeClusters(string.toUpperCase());
 
   bool operator ==(Object other) =>
-     other is GraphemeClusters && string == other.string;
+      other is GraphemeClusters && string == other.string;
 
   int get hashCode => string.hashCode;
 

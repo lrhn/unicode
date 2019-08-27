@@ -327,6 +327,9 @@ void expectGC(GraphemeClusters actual, List<String> expected) {
     expect(it.start, accumulatedLengths[i]);
     expect(it.end, accumulatedLengths[i + 1]);
     expect(it.current, expected[i]);
+
+    expect(actual.elementAt(i), expected[i]);
+    expect(actual.skip(i).first, expected[i]);
   }
   expect(it.moveNext(), false);
   expect(it.start, accumulatedLengths.last);
@@ -348,8 +351,9 @@ void expectGC(GraphemeClusters actual, List<String> expected) {
   if (text.isNotEmpty) {
     expect(actual.insertAt(1, gc("abc")).toString(),
         text.replaceRange(1, 1, "abc"));
-    expect(actual.replaceRange(0, 1, gc("abc")).toString(),
+    expect(actual.replaceSubstring(0, 1, gc("abc")).toString(),
         text.replaceRange(0, 1, "abc"));
+    expect(actual.substring(0, 1).string, actual.string.substring(0, 1));
   }
 
   expect(actual.string, text);
