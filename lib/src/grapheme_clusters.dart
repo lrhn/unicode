@@ -24,10 +24,20 @@ Iterable<int> graphemeClusterBoundaries(String string,
 }
 
 /// The grapheme clusters of a string.
+///
+/// A grapheme cluster is a substring of the original string.
+/// The `GraphemeClusters` class is an [Iterable] of those strings.
+/// However, unlike most iterables, many of the operations are
+/// *eager*. Since the underlying string is known in its entirety,
+/// and is known not to change, operations which select a subset of
+/// the elements can be computed eagerly, and in that case the
+/// operation returns a new `GraphemeClusters` object.
 abstract class GraphemeClusters implements Iterable<String> {
   /// Creates a [GraphemeClusters] allowing iteration of
   /// the grapheme clusters of [string].
   factory GraphemeClusters(String string) = _GraphemeClusters;
+
+  factory GraphemeClusters.empty() = _GraphemeClusters.empty;
 
   /// The string to iterate over.
   String get string;
@@ -37,6 +47,144 @@ abstract class GraphemeClusters implements Iterable<String> {
   /// Allows iterating the grapheme clusters of [string] as a plain iterator,
   // as well as controlling the iteration in more detail.
   GraphemeCluster get iterator;
+
+  /// Eagerly selects the first [count] grapheme clusters.
+  ///
+  /// If [count] is greater than [length], the count of grapheme
+  /// clusters available, then the entire sequence of grapheme clusters
+  /// is returned.
+  GraphemeClusters take(int count);
+
+  /// Eagerly selects all but the first [count] grapheme clusters.
+  ///
+  /// If [count] is greater than [length], the count of grapheme
+  /// clusters available, then the empty sequence of grapheme clusters
+  /// is returned.
+  GraphemeClusters skip(int count);
+
+  /// Eagerly selects a range of grapheme clusters.
+  ///
+  /// The [start] must be non-negative and [end] must be at least
+  /// as large as [start].
+  ///
+  /// If [end] is greater than [length], the count of grapheme
+  /// clusters available, then the entire sequence of grapheme clusters
+  /// is returned.
+  GraphemeClusters getRange(int start, int end);
+
+  /// Eagerly selects a leading sequnce of grapheme clusters.
+  ///
+  /// Checks each grapheme cluster, from first to last, against [test],
+  /// until one is found whwere [test] returns `false`.
+  /// The grapheme clusters up to, but not including, the first one
+  /// where [test] returns `false` are included in the result.
+  ///
+  /// If no grapheme clusters test `false`, the entire sequence of grapheme
+  /// clusters is returned.
+  GraphemeClusters takeWhile(bool Function(String) test);
+
+  /// Eagerly selects a trailing sequence of grapheme clusters.
+  ///
+  /// Checks each grapheme cluster, from first to last, against [test],
+  /// until one is found whwere [test] returns `false`.
+  /// The grapheme clusters starting with the first one
+  /// where [test] returns `false`, are included in the result.
+  ///
+  /// If no grapheme clusters test `false`, the result is an empty sequence
+  /// of grapheme clusters.
+  GraphemeClusters skipWhile(bool Function(String) test);
+
+  /// Eagerly selects a subset of the grapheme clusters.
+  ///
+  /// Tests each grapheme cluster against [test], and returns the
+  /// grapheme clusters of the concatenation of those grapheme cluster strings.
+  GraphemeClusters where(bool Function(String) test);
+
+  /// Eagerly selects all but the last [count] grapheme clusters.
+  ///
+  /// If [count] is greater than [length], the count of grapheme
+  /// clusters available, then the empty sequence of grapheme clusters
+  /// is returned.
+  GraphemeClusters skipLast(int count);
+
+  /// Eagerly selects the last [count] grapheme clusters.
+  ///
+  /// If [count] is greater than [length], the count of grapheme
+  /// clusters available, then the entire sequence of grapheme clusters
+  /// is returned.
+  GraphemeClusters takeLast(int count);
+
+  /// Eagerly selects a leading sequnce of grapheme clusters.
+  ///
+  /// Checks each grapheme cluster, from last to first, against [test],
+  /// until one is found whwere [test] returns `false`.
+  /// The grapheme clusters up to and including the one with the latest index
+  /// where [test] returns `false` are included in the result.
+  ///
+  /// If no grapheme clusters test `false`, the empty sequence of grapheme
+  /// clusters is returned.
+  GraphemeClusters skipLastWhere(bool Function(String) test);
+
+  /// Eagerly selects a trailing sequence of grapheme clusters.
+  ///
+  /// Checks each grapheme cluster, from last to first, against [test],
+  /// until one is found whwere [test] returns `false`.
+  /// The grapheme clusters after the one with the latest index where
+  /// [test] returns `false` are included in the result.
+  ///
+  /// If no grapheme clusters test `false`, the entire sequence of grapheme
+  /// clusters is returned.
+  GraphemeClusters takeLastWhere(bool Function(String) test);
+
+  /// The grapheme clusters of the concatenation of this and [other].
+  ///
+  /// This is the grapheme clusters of the concatenation of the underlying
+  /// strings. If there is no grapheme cluster break at the concatenation
+  /// point in the resulting string, then the result is not the concatenation
+  /// of the two grapheme cluster sequences.
+  ///
+  /// This differs from [followedBy] which provides the lazy concatenation
+  /// of this sequence of strings with any other sequence of strings.
+  GraphemeClusters operator +(GraphemeClusters other);
+
+  /// The grapheme clusters of [string] with [other] inserted at [index].
+  GraphemeClusters insertAt(int index, GraphemeClusters other);
+
+  /// The grapheme clusters of [string] with a substring replaced by other.
+  GraphemeClusters replaceRange(
+      int startIndex, int endIndex, GraphemeClusters other);
+
+  /// The grapheme clusters of the lower-case version of [string].
+  GraphemeClusters toLowerCase();
+
+  /// The grapheme clusters of the upper-case version of [string].
+  GraphemeClusters toUpperCase();
+
+  /// The string index after the first place [other] occurs as a subsequence of
+  /// these grapheme clusters.
+  ///
+  /// Returns the [string] index after the first occurrence of the grapheme
+  /// clusters of [other] in the sequence of grapheme clusters of [string].
+  /// Returns a negative number if there is no such occurrence of [other].
+  ///
+  /// If [startIndex] is supplied, returns the index after the first occurrence
+  /// of [other] in this which starts no earlier than [startIndex], and again
+  /// returns `null` if there is no such occurrence. That is, if the result
+  /// is non-negative, it is greater than or equal to [startIndex].
+  int indexAfter(GraphemeClusters other, [int startIndex]);
+
+  /// The string index after the last place where [other] occurs as
+  /// a subsequence of these grapheme clusters.
+  ///
+  /// Returns the [string] index after the last occurrence of the grapheme
+  /// clusters of [other] in the sequence of grapheme clusters of [string].
+  /// Returns a negative number if there is no such occurrence of [other].
+  ///
+  /// If [startIndex] is supplied, returns the index after the last occurrence
+  /// of [other] in this which ends no later than [startIndex], and again
+  /// returns `null` if there is no such occurrence. That is the result
+  /// is less than or equal to [startIndex].
+  int lastIndexAfter(GraphemeClusters other, [int startIndex]);
 
   /// Whether [graphemeCluster] is an element of this sequence of
   /// grapheme clusters.
@@ -51,49 +199,77 @@ abstract class GraphemeClusters implements Iterable<String> {
   /// as a subsequence.
   bool containsAll(GraphemeClusters other);
 
-  /// The first string index where [other] occurs as a subsequence of these
-  /// grapheme clusters.
+  /// The string index before the first place where [other] occurs as
+  /// a subsequence of these grapheme clusters.
   ///
-  /// If [startIndex] is supplied, searching starts at [startIndex], which
-  /// *should* be a grapheme cluster boundary.
-  int indexOf(GraphemeClusters other, [int startIndex = 0]);
+  /// Returns the [string] index before first occurrence of the grapheme
+  /// clusters of [other] in the sequence of grapheme clusters of [string].
+  /// Returns a negative number if there is no such occurrence of [other].
+  ///
+  /// If [startIndex] is supplied, returns the index after the first occurrence
+  /// of [other] in this which starts no earlier than [startIndex], and again
+  /// returns `null` if there is no such occurrence. That is, if the result
+  /// is non-negative, it is greater than or equal to [startIndex].
+  int indexOf(GraphemeClusters other, [int startIndex]);
+
+  /// The string index before the last place where [other] occurs as
+  /// a subsequence of these grapheme clusters.
+  ///
+  /// Returns the [string] index before last occurrence of the grapheme
+  /// clusters of [other] in the sequence of grapheme clusters of [string].
+  /// Returns a negative number if there is no such occurrence of [other].
+  ///
+  /// If [startIndex] is supplied, returns the before after the first occurrence
+  /// of [other] in this which starts no later than [startIndex], and again
+  /// returns `null` if there is no such occurrence. That is the result
+  /// is less than or equal to [startIndex].
+  int lastIndexOf(GraphemeClusters other, [int startIndex]);
 
   /// Whether [other] is an initial subsequence of this sequence
   /// of grapheme clusters.
   ///
   /// If [startIndex] is provided, then checks whether
   /// [other] is an initial subsequence of the grapheme clusters
-  /// of the substring of [string] starting at [startIndex].
+  /// starting at the grapheme cluster boundary [startIndex].
+  ///
+  /// Returns `true` if [other] is a sub-sequence of this sequence of
+  /// grapheme clusters startings at the grapheme cluster boundary [startIndex].
+  /// Returns `false` if [startIndex] is not a grapheme cluster boundary,
+  /// or if [other] does not occur at that position.
   bool startsWith(GraphemeClusters other, [int startIndex = 0]);
 
   /// Whether [other] is an trailing subsequence of this sequence
   /// of grapheme clusters.
   ///
   /// If [endIndex] is provided, then checks whether
-  /// [other] is an trailing subsequence of the grapheme clusters
-  /// of the substring of [string] ending at [endIndex].
+  /// [other] is a trailing subsequence of the grapheme clusters
+  /// starting at the grapheme cluster boundary [endIndex].
+  ///
+  /// Returns `true` if [other] is a sub-sequence of this sequence of
+  /// grapheme clusters startings at the grapheme cluster boundary [endIndex].
+  /// Returns `false` if [endIndex] is not a grapheme cluster boundary,
+  /// or if [other] does not occur at that position.
   bool endsWith(GraphemeClusters other, [int endIndex]);
 
-  /// Returns a new grapheme clusters sequence where [source] has been
-  /// replaced by [replacement].start
+  /// Replaces [source] with [replacement].
   ///
-  /// If [startIndex] is provided, instead replaces grapheme clusters of the
-  /// substring of [string] starting at [startIndex].
-  /// The [startIndex] should be a grapheme cluster boundary in [string],
-  /// otherwise the replaced substrings may not correspond to grapheme
-  /// clusters of this sequence.
+  /// Returns a new [GrapehemeClusters] where all occurrences of the
+  /// [source] grapheme cluster sequence are replaced by [replacement],
+  /// unless the occurrence overlaps a prior replaced sequence.
+  ///
+  /// If [startIndex] is provided, only replace grapheme clusters
+  /// starting no earlier than [startIndex] in [string].
   GraphemeClusters replaceAll(
       GraphemeClusters source, GraphemeClusters replacement,
       [int startIndex = 0]);
 
-  /// Returns a new grapheme clusters sequence where the first occurrence of
-  /// [source] has been replaced by [replacement].
+  /// Replaces the first [source] with [replacement].
   ///
-  /// If [startIndex] is provided, instead replaces the first matching
-  /// grapheme clusters of the substring of [string] starting at [startIndex].
-  /// The [startIndex] should be a grapheme cluster boundary in [string],
-  /// otherwise the replaced substrings may not correspond to grapheme
-  /// clusters of this sequence.
+  /// Returns a new [GraphemeClusters] where the first occurence of the
+  /// [source] grapheme cluster sequence, if any, is replaced by [replacement].
+  ///
+  /// If [startIndex] is provided, replaces the first occurrence
+  /// of [source] starting no earlier than [startIndex] in [string], if any.
   GraphemeClusters replaceFirst(
       GraphemeClusters source, GraphemeClusters replacement,
       [int startIndex = 0]);
@@ -152,9 +328,17 @@ abstract class GraphemeCluster implements BidirectionalIterator<String> {
 
 /// The grapheme clusters of a string.
 class _GraphemeClusters extends Iterable<String> implements GraphemeClusters {
+  // Try to avoid allocating more empty grapheme clusters.
+  static const GraphemeClusters _empty = const _GraphemeClusters._("");
+
   final String string;
 
-  _GraphemeClusters(this.string);
+  const _GraphemeClusters._(this.string);
+
+  factory _GraphemeClusters(String string) =>
+      string.isEmpty ? _empty : _GraphemeClusters._(string);
+
+  factory _GraphemeClusters.empty() => _empty;
 
   GraphemeCluster get iterator => _GraphemeCluster(string);
 
@@ -217,40 +401,39 @@ class _GraphemeClusters extends Iterable<String> implements GraphemeClusters {
   bool contains(Object other) {
     if (other is String) {
       if (other.isEmpty) return false;
-      int i = 0;
-      while (i + other.length <= string.length) {
-        int index = string.indexOf(other, i);
-        if (index < 0) return false;
-        if (isGraphemeClusterBoundary(string, 0, string.length, index)) {
-          int next =
-              Breaks(string, index, string.length, stateSoTNoBreak).nextBreak();
-          assert(next >= 0);
-          if (next == index + other.length) return true;
-        }
-        i = index + 1;
-      }
+      int next = Breaks(other, 0, other.length, stateSoTNoBreak).nextBreak();
+      if (next != other.length) return false;
+      // [other] is single grapheme cluster.
+      return _indexOf(other, 0) >= 0;
     }
     return false;
   }
 
-  int indexOf(GraphemeClusters other, [int startIndex = 0]) {
+  int indexOf(GraphemeClusters other, [int startIndex]) {
     int length = string.length;
-    RangeError.checkValidRange(startIndex, length, length, "startIndex");
-    return _indexOf(other, startIndex);
+    if (startIndex == null) {
+      startIndex = 0;
+    } else {
+      RangeError.checkValidRange(startIndex, length, length, "startIndex");
+    }
+    return _indexOf(other.string, startIndex);
   }
 
-  int _indexOf(GraphemeClusters other, int startIndex) {
-    String otherString = other.string;
+  /// Finds first occurrence of [otherString] at grapheme cluster boundaries.
+  ///
+  /// Only finds occurrences starting at or after [startIndex].
+  int _indexOf(String otherString, int startIndex) {
     int otherLength = otherString.length;
-    if (otherLength == 0) return startIndex;
+    if (otherLength == 0) {
+      return nextBreak(string, 0, string.length, startIndex);
+    }
     int length = string.length;
-    int index = startIndex;
-    while (index + otherLength <= length) {
+    while (startIndex + otherLength <= length) {
       int matchIndex = string.indexOf(otherString, startIndex);
       if (matchIndex < 0) return matchIndex;
-      if (isGraphemeClusterBoundary(string, startIndex, length, matchIndex) &&
+      if (isGraphemeClusterBoundary(string, 0, length, matchIndex) &&
           isGraphemeClusterBoundary(
-              string, startIndex, length, matchIndex + otherLength)) {
+              string, 0, length, matchIndex + otherLength)) {
         return matchIndex;
       }
       startIndex = matchIndex + 1;
@@ -258,24 +441,48 @@ class _GraphemeClusters extends Iterable<String> implements GraphemeClusters {
     return -1;
   }
 
+  /// Finds last occurrence of [otherString] at grapheme cluster boundaries.
+  ///
+  /// Starts searching backwards at [startIndex].
+  int _lastIndexOf(String otherString, int startIndex) {
+    int otherLength = otherString.length;
+    if (otherLength == 0) {
+      return previousBreak(string, 0, string.length, startIndex);
+    }
+    int length = string.length;
+    while (startIndex >= 0) {
+      int matchIndex = string.lastIndexOf(otherString, startIndex);
+      if (matchIndex < 0) return matchIndex;
+      if (isGraphemeClusterBoundary(string, 0, length, matchIndex) &&
+          isGraphemeClusterBoundary(
+              string, 0, length, matchIndex + otherLength)) {
+        return matchIndex;
+      }
+      startIndex = matchIndex - 1;
+    }
+    return -1;
+  }
+
   bool startsWith(GraphemeClusters other, [int startIndex = 0]) {
-    RangeError.checkValueInInterval(startIndex, 0, string.length, "startIndex");
+    int length = string.length;
+    RangeError.checkValueInInterval(startIndex, 0, length, "startIndex");
     String otherString = other.string;
     if (otherString.isEmpty) return true;
     return string.startsWith(otherString, startIndex) &&
         isGraphemeClusterBoundary(
-            string, 0, string.length, startIndex + otherString.length);
+            string, 0, length, startIndex + otherString.length);
   }
 
   bool endsWith(GraphemeClusters other, [int endIndex]) {
+    int length = string.length;
+    if (endIndex == null) {
+      endIndex = length;
+    } else {
+      RangeError.checkValueInInterval(endIndex, 0, length, "endIndex");
+    }
     String otherString = other.string;
     if (otherString.isEmpty) return true;
-    int length = string.length;
     int otherLength = otherString.length;
-    if (endIndex == null || endIndex == length) {
-      return string.endsWith(otherString) &&
-          isGraphemeClusterBoundary(string, 0, length, length - otherLength);
-    }
     int start = endIndex - otherLength;
     return start >= 0 &&
         string.startsWith(otherString, start) &&
@@ -335,8 +542,248 @@ class _GraphemeClusters extends Iterable<String> implements GraphemeClusters {
   }
 
   bool containsAll(GraphemeClusters other) {
-    return _indexOf(other, 0) >= 0;
+    return _indexOf(other.string, 0) >= 0;
   }
+
+  GraphemeClusters skip(int count) {
+    RangeError.checkNotNegative(count, "count");
+    if (count == 0) return this;
+    if (this.isNotEmpty) {
+      var breaks = Breaks(string, 0, string.length, stateSoTNoBreak);
+      int startIndex = 0;
+      while (count > 0) {
+        int index = breaks.nextBreak();
+        if (index >= 0) {
+          count--;
+          startIndex = index;
+        } else {
+          return _empty;
+        }
+      }
+      return _GraphemeClusters(string.substring(startIndex));
+    }
+    return this;
+  }
+
+  GraphemeClusters take(int count) {
+    RangeError.checkNotNegative(count, "count");
+    if (count == 0) return _empty;
+    if (this.isNotEmpty) {
+      var breaks = Breaks(string, 0, string.length, stateSoTNoBreak);
+      int endIndex = 0;
+      while (count > 0) {
+        int index = breaks.nextBreak();
+        if (index >= 0) {
+          count--;
+          endIndex = index;
+        } else {
+          return this;
+        }
+      }
+      return _GraphemeClusters._(string.substring(0, endIndex));
+    }
+    return this;
+  }
+
+  GraphemeClusters skipWhile(bool Function(String) test) {
+    if (string.isNotEmpty) {
+      var breaks = Breaks(string, 0, string.length, stateSoTNoBreak);
+      int index = 0;
+      int startIndex = 0;
+      while ((index = breaks.nextBreak()) >= 0) {
+        if (!test(string.substring(startIndex, index))) {
+          if (startIndex == 0) return this;
+          return _GraphemeClusters._(string.substring(startIndex));
+        }
+        startIndex = index;
+      }
+    }
+    return _GraphemeClusters.empty();
+  }
+
+  GraphemeClusters takeWhile(bool Function(String) test) {
+    if (string.isNotEmpty) {
+      var breaks = Breaks(string, 0, string.length, stateSoTNoBreak);
+      int index = 0;
+      int endIndex = 0;
+      while ((index = breaks.nextBreak()) >= 0) {
+        if (!test(string.substring(endIndex, index))) {
+          if (endIndex == 0) return _empty;
+          return _GraphemeClusters._(string.substring(0, endIndex));
+        }
+        endIndex = index;
+      }
+    }
+    return this;
+  }
+
+  GraphemeClusters where(bool Function(String) test) =>
+      _GraphemeClusters(super.where(test).join());
+
+  GraphemeClusters operator +(GraphemeClusters other) =>
+      _GraphemeClusters(string + other.string);
+
+  GraphemeClusters getRange(int start, int end) {
+    RangeError.checkNotNegative(start, "start");
+    if (end < start) throw RangeError.range(end, start, null, "end");
+    if (string.isEmpty) return this;
+    var breaks = Breaks(string, 0, string.length, stateSoTNoBreak);
+    int startIndex = 0;
+    int endIndex = string.length;
+    end -= start;
+    while (start > 0) {
+      int index = breaks.nextBreak();
+      if (index >= 0) {
+        startIndex = index;
+        start--;
+      } else {
+        return _GraphemeClusters.empty();
+      }
+    }
+    while (end > 0) {
+      int index = breaks.nextBreak();
+      if (index >= 0) {
+        endIndex = index;
+        end--;
+      } else {
+        if (startIndex == 0) return this;
+        return _GraphemeClusters(string.substring(startIndex));
+      }
+    }
+    if (startIndex == 0 && endIndex == string.length) return this;
+    return _GraphemeClusters(string.substring(startIndex, endIndex));
+  }
+
+  GraphemeClusters skipLast(int count) {
+    RangeError.checkNotNegative(count, "count");
+    if (count == 0) return this;
+    if (string.isNotEmpty) {
+      var breaks = BackBreaks(string, string.length, 0, stateEoTNoBreak);
+      int endIndex = string.length;
+      while (count > 0) {
+        int index = breaks.nextBreak();
+        if (index >= 0) {
+          endIndex = index;
+          count--;
+        } else {
+          return _GraphemeClusters.empty();
+        }
+      }
+      return _GraphemeClusters(string.substring(0, endIndex));
+    }
+    return _GraphemeClusters.empty();
+  }
+
+  GraphemeClusters skipLastWhere(bool Function(String) test) {
+    if (string.isNotEmpty) {
+      var breaks = BackBreaks(string, string.length, 0, stateEoTNoBreak);
+      int index = 0;
+      int end = string.length;
+      while ((index = breaks.nextBreak()) >= 0) {
+        if (!test(string.substring(index, end))) {
+          if (end == string.length) return this;
+          return _GraphemeClusters(string.substring(0, end));
+        }
+        end = index;
+      }
+    }
+    return _GraphemeClusters.empty();
+  }
+
+  GraphemeClusters takeLast(int count) {
+    RangeError.checkNotNegative(count, "count");
+    if (count == 0) return this;
+    if (string.isNotEmpty) {
+      var breaks = BackBreaks(string, string.length, 0, stateEoTNoBreak);
+      int startIndex = string.length;
+      while (count > 0) {
+        int index = breaks.nextBreak();
+        if (index >= 0) {
+          startIndex = index;
+          count--;
+        } else {
+          return this;
+        }
+      }
+      return _GraphemeClusters(string.substring(startIndex));
+    }
+    return this;
+  }
+
+  GraphemeClusters takeLastWhere(bool Function(String) test) {
+    if (string.isNotEmpty) {
+      var breaks = BackBreaks(string, string.length, 0, stateEoTNoBreak);
+      int index = 0;
+      int start = string.length;
+      while ((index = breaks.nextBreak()) >= 0) {
+        if (!test(string.substring(index, start))) {
+          return _GraphemeClusters(string.substring(start));
+        }
+        start = index;
+      }
+    }
+    return this;
+  }
+
+  int indexAfter(GraphemeClusters other, [int startIndex]) {
+    int length = string.length;
+    String otherString = other.string;
+    int otherLength = otherString.length;
+    if (startIndex == null) {
+      startIndex = 0;
+    } else {
+      RangeError.checkValueInInterval(startIndex, 0, length, "startIndex");
+    }
+    if (otherLength > startIndex) startIndex = otherLength;
+    int start = _indexOf(other.string, startIndex - otherLength);
+    if (start < 0) return start;
+    return start + otherLength;
+  }
+
+  GraphemeClusters insertAt(int index, GraphemeClusters other) {
+    int length = string.length;
+    RangeError.checkValidRange(index, length, length, "index");
+    return _GraphemeClusters._(string.replaceRange(index, index, other.string));
+  }
+
+  int lastIndexAfter(GraphemeClusters other, [int startIndex]) {
+    String otherString = other.string;
+    int otherLength = otherString.length;
+    if (startIndex == null) {
+      startIndex = string.length;
+    } else {
+      RangeError.checkValueInInterval(
+          startIndex, 0, string.length, "startIndex");
+    }
+    if (otherLength > startIndex) return -1;
+    int start = _lastIndexOf(otherString, startIndex - otherLength);
+    if (start < 0) return start;
+    return start + otherLength;
+  }
+
+  int lastIndexOf(GraphemeClusters other, [int startIndex]) {
+    if (startIndex == null) {
+      startIndex = string.length;
+    } else {
+      RangeError.checkValueInInterval(
+          startIndex, 0, string.length, "startIndex");
+    }
+    return _lastIndexOf(other.string, startIndex);
+  }
+
+  GraphemeClusters replaceRange(
+      int startIndex, int endIndex, GraphemeClusters other) {
+    RangeError.checkValidRange(
+        startIndex, endIndex, string.length, "startIndex", "endIndex");
+    return _GraphemeClusters._(
+        string.replaceRange(startIndex, endIndex, other.string));
+  }
+
+  GraphemeClusters toLowerCase() => _GraphemeClusters(string.toLowerCase());
+
+  GraphemeClusters toUpperCase() => _GraphemeClusters(string.toUpperCase());
+
+  String toString() => string;
 }
 
 class _GraphemeCluster implements GraphemeCluster {

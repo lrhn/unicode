@@ -158,7 +158,9 @@ int lookAhead(String base, int start, int cursor, int state) {
     return lookAheadRegional(base, start, cursor);
   }
   if (state == stateZWJPictographicLookahead) {
-    return lookAheadZWJPictorgraphic(base, start, cursor);
+    int prevPic = lookAheadPictorgraphicExtend(base, start, cursor);
+    if (prevPic >= 0) return stateZWJPictographic | stateNoBreak;
+    return stateExtend; // State for break before seeing ZWJ.
   }
   throw StateError("Unexpected state: ${state.toRadixString(16)}");
 }
@@ -177,7 +179,7 @@ int lookAheadRegional(String base, int start, int cursor) {
   // Has just seen second regional indicator.
   // Figure out if there are an odd or even number of preceding RIs.
   // ALL REGIONAL INDICATORS ARE NON-BMP CHARACTERS.
-  int count = 0; // Include the current character triggering this.
+  int count = 0;
   int index = cursor;
   while (index - 2 >= start) {
     int tail = base.codeUnitAt(index - 1);
@@ -198,11 +200,12 @@ int lookAheadRegional(String base, int start, int cursor) {
 
 /// Checks if a ZWJ+Pictographic token sequence should be broken.
 ///
-/// The sequence should no be broken if the preceding code points
-/// are Pictographic Extend*.
+/// Checks whether the characters preceeding [cursor] are Pic Ext*.
 /// Only the [base] string from [start] to [cursor] is checked.
-/// The [cursor] points to the ZWJ code point.
-int lookAheadZWJPictorgraphic(String base, int start, int cursor) {
+///
+/// Returns the index of the Pic character if preceeded by Pic Ext*,
+/// and negative if not.
+int lookAheadPictorgraphicExtend(String base, int start, int cursor) {
   // Has just seen ZWJ+Pictographic. Check if preceeding is Pic Ext*.
   // (If so, just move cursor back to the Pic).
   int index = cursor;
@@ -219,11 +222,11 @@ int lookAheadZWJPictorgraphic(String base, int start, int cursor) {
       break;
     }
     if (category == categoryPictographic) {
-      return stateZWJPictographic | stateNoBreak;
+      return index;
     }
     if (category != categoryExtend) break;
   }
-  return stateExtend; // State for break before seeing ZWJ.
+  return -1;
 }
 
 /// Whether there is a grapheme cluster boundary before [index] in [text].
@@ -290,4 +293,87 @@ bool isGraphemeClusterBoundary(String text, int start, int end, int index) {
   }
   // Always boundary at EoT or SoT, unless there is nothing between them.
   return start != end;
+}
+
+/// The most recent break no later than [position] in
+/// `string.substring(start, end)`.
+int previousBreak(String text, int start, int end, int index) {
+  assert(0 <= start);
+  assert(start <= index);
+  assert(index <= end);
+  assert(end <= text.length);
+  if (index == start || index == end) return index;
+  int indexBefore = index;
+  int nextChar = text.codeUnitAt(index);
+  int category = categoryControl;
+  if (nextChar & 0xF800 != 0xD800) {
+    category = low(nextChar);
+  } else if (nextChar & 0xFC00 == 0xD800) {
+    int indexAfter = index + 1;
+    if (indexAfter < end) {
+      int secondChar = text.codeUnitAt(indexAfter);
+      if (secondChar & 0xFC00 == 0xDC00) {
+        category = high(nextChar, secondChar);
+      }
+    }
+  } else {
+    int prevChar = text.codeUnitAt(index - 1);
+    if (prevChar & 0xFC00 == 0xD800) {
+      category = high(prevChar, nextChar);
+      indexBefore -= 1;
+    }
+  }
+  return BackBreaks(
+          text, indexBefore, start, moveBack(stateEoTNoBreak, category))
+      .nextBreak();
+}
+
+/// The next break no earlier than [position] in `string.substring(start, end)`.
+int nextBreak(String text, int start, int end, int index) {
+  assert(0 <= start);
+  assert(start <= index);
+  assert(index <= end);
+  assert(end <= text.length);
+  if (index == start || index == end) return index;
+  int indexBefore = index - 1;
+  int prevChar = text.codeUnitAt(indexBefore);
+  int prevCategory = categoryControl;
+  if (prevChar & 0xF800 != 0xD800) {
+    prevCategory = low(prevChar);
+  } else if (prevChar & 0xFC00 == 0xD800) {
+    int nextChar = text.codeUnitAt(index);
+    if (nextChar & 0xFC00 == 0xDC00) {
+      index += 1;
+      if (index == end) return end;
+      prevCategory = high(prevChar, nextChar);
+    }
+  } else if (indexBefore > start) {
+    int secondCharIndex = indexBefore - 1;
+    int secondChar = text.codeUnitAt(secondCharIndex);
+    if (secondChar & 0xFC00 == 0xD800) {
+      indexBefore = secondCharIndex;
+      prevCategory = high(secondChar, prevChar);
+    }
+  }
+  // The only boundaries which depend on more information than
+  // the previous character are the [^RI] (RI RI)* RI x RI and
+  // Pic Ext* ZWJ x Pic breaks. In all other cases, all the necessary
+  // information is in the last seen category.
+  int state = stateOther;
+  if (prevCategory == categoryRegionalIndicator) {
+    int prevState = lookAheadRegional(text, start, indexBefore);
+    if (prevState != stateRegionalOdd) {
+      state = stateRegionalSingle;
+    }
+  } else if (prevCategory == categoryZWJ || prevCategory == categoryExtend) {
+    int prevPic = lookAheadPictorgraphicExtend(text, start, indexBefore);
+    if (prevPic >= 0) {
+      state = prevCategory == categoryZWJ
+          ? statePictographicZWJ
+          : statePictographic;
+    }
+  } else {
+    state = move(stateSoTNoBreak, prevCategory);
+  }
+  return Breaks(text, index, text.length, state).nextBreak();
 }
