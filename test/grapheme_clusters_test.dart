@@ -234,7 +234,7 @@ void tests() {
 List<String> charsOf(String text) =>
     text.runes.map((r) => String.fromCharCode(r)).toList();
 
-void expectGC(GraphemeClusters actual, List<String> expected) {
+void expectGC(Characters actual, List<String> expected) {
   var text = expected.join();
 
   // Iterable operations.
@@ -442,4 +442,4 @@ void expectGC(GraphemeClusters actual, List<String> expected) {
   }
 }
 
-GraphemeClusters gc(String string) => GraphemeClusters(string);
+Characters gc(String string) => Characters(string);
