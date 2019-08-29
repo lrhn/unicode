@@ -16,8 +16,6 @@ class _GraphemeClusters extends Iterable<String> implements GraphemeClusters {
   factory _GraphemeClusters(String string) =>
       string.isEmpty ? _empty : _GraphemeClusters._(string);
 
-  factory _GraphemeClusters.empty() => _empty;
-
   GraphemeCluster get iterator => _GraphemeCluster(string);
 
   String get first => string.isEmpty
@@ -298,7 +296,7 @@ class _GraphemeClusters extends Iterable<String> implements GraphemeClusters {
         startIndex = index;
       }
     }
-    return _GraphemeClusters.empty();
+    return _empty;
   }
 
   GraphemeClusters takeWhile(bool Function(String) test) {
@@ -337,7 +335,7 @@ class _GraphemeClusters extends Iterable<String> implements GraphemeClusters {
         startIndex = index;
         start--;
       } else {
-        return _GraphemeClusters.empty();
+        return _empty;
       }
     }
     while (end > 0) {
@@ -366,12 +364,12 @@ class _GraphemeClusters extends Iterable<String> implements GraphemeClusters {
           endIndex = index;
           count--;
         } else {
-          return _GraphemeClusters.empty();
+          return _empty;
         }
       }
       return _GraphemeClusters(string.substring(0, endIndex));
     }
-    return _GraphemeClusters.empty();
+    return _empty;
   }
 
   GraphemeClusters skipLastWhile(bool Function(String) test) {
@@ -443,6 +441,10 @@ class _GraphemeClusters extends Iterable<String> implements GraphemeClusters {
   GraphemeClusters insertAt(int index, GraphemeClusters other) {
     int length = string.length;
     RangeError.checkValidRange(index, length, length, "index");
+    if (string.isEmpty) {
+      assert(index == 0);
+      return other;
+    }
     return _GraphemeClusters._(string.replaceRange(index, index, other.string));
   }
 
@@ -475,6 +477,7 @@ class _GraphemeClusters extends Iterable<String> implements GraphemeClusters {
       int startIndex, int endIndex, GraphemeClusters other) {
     RangeError.checkValidRange(
         startIndex, endIndex, string.length, "startIndex", "endIndex");
+    if (startIndex == 0 && endIndex == string.length) return other;
     return _GraphemeClusters._(
         string.replaceRange(startIndex, endIndex, other.string));
   }
@@ -510,6 +513,8 @@ class _GraphemeCluster implements GraphemeCluster {
   // whether we are moving forwards or backwards ([_directionMask]),
   // and how far ahead the cursor is from the start/end ([_cursorDeltaMask]).
   int _state;
+  // The [current] value is created lazily and cached to avoid repeated
+  // or unnecessary string allocation.
   String _currentCache;
 
   _GraphemeCluster(String string) : this._(string, 0, 0, stateSoTNoBreak);
@@ -532,15 +537,14 @@ class _GraphemeCluster implements GraphemeCluster {
     var breaks = Breaks(_string, cursor, _string.length, state);
     var next = breaks.nextBreak();
     _currentCache = null;
+    _start = _end;
     if (next >= 0) {
-      _start = _end;
       _end = next;
       _state =
           (breaks.state & 0xF0) | _directionForward | (breaks.cursor - next);
       return true;
     }
     _state = stateEoTNoBreak | _directionBackward;
-    _start = _end;
     return false;
   }
 
@@ -555,15 +559,14 @@ class _GraphemeCluster implements GraphemeCluster {
     var breaks = BackBreaks(_string, cursor, 0, state);
     var next = breaks.nextBreak();
     _currentCache = null;
+    _end = _start;
     if (next >= 0) {
-      _end = _start;
       _start = next;
       _state =
           (breaks.state & 0xF0) | _directionBackward | (next - breaks.cursor);
       return true;
     }
     _state = stateSoTNoBreak | _directionForward;
-    _end = start;
     return false;
   }
 
@@ -573,6 +576,20 @@ class _GraphemeCluster implements GraphemeCluster {
 
   void reset(int index) {
     RangeError.checkValueInInterval(index, 0, _string.length, "index");
+    _reset(index);
+  }
+
+  void resetStart() {
+    _reset(0);
+  }
+
+  void resetEnd() {
+    _state = stateEoTNoBreak | _directionBackward;
+    _currentCache = null;
+    _start = _end = _string.length;
+  }
+
+  void _reset(int index) {
     _state = stateSoTNoBreak | _directionForward;
     _currentCache = null;
     _start = _end = index;

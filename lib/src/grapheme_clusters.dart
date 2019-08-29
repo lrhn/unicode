@@ -51,8 +51,6 @@ abstract class GraphemeClusters implements Iterable<String> {
   /// the grapheme clusters of [string].
   factory GraphemeClusters(String string) = _GraphemeClusters;
 
-  factory GraphemeClusters.empty() = _GraphemeClusters.empty;
-
   /// The string to iterate over.
   String get string;
 
@@ -352,6 +350,18 @@ abstract class GraphemeCluster implements BidirectionalIterator<String> {
   /// A `reset(0)` will reset to the beginning of the string, as for a newly
   /// created iterator.
   void reset(int index);
+
+  /// Resets the iterator to the start of the string.
+  ///
+  /// The iterator will be in the same state as a newly created iterator
+  /// from [GraphemeClusters.itearator].
+  void resetStart();
+
+  /// Resets the iterator to the end of the string.
+  ///
+  /// The iterator will be in the same state as an iterator which has
+  /// performed [moveNext] until it returned false.
+  void resetEnd();
 
   /// Creates a copy of this [GraphemeIterator].
   ///
